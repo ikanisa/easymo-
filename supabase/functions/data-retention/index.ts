@@ -108,8 +108,8 @@ async function archiveCampaignTargets(now: Date): Promise<number> {
     const { error: upsertErr } = await supabase
       .from("campaign_target_archives")
       .upsert(records, { onConflict: "target_id" });
-    if (upsertErr) {
-      throw new Error(`campaign_targets_archive_upsert_failed: ${upsertErr.message}`);
+    if (insertErr) {
+      throw new Error(`campaign_targets_archive_insert_failed: ${insertErr.message}`);
     }
 
     const ids = data.map((row) => row.id);
