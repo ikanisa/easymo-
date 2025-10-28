@@ -21,21 +21,34 @@ const forbiddenNames = [
 // Check for forbidden patterns in environment variables
 let foundViolation = false;
 
+const looksLikeServiceRoleKey = (rawValue) => {
+  if (!rawValue) return false;
+  const value = String(rawValue).trim().replace(/^['"]|['"]$/g, '');
+  if (value.length < 80) return false;
+
+  const upperValue = value.toUpperCase();
+  if (!upperValue.startsWith('EYJ')) return false;
+
+  const jwtParts = value.split('.');
+  if (jwtParts.length < 3) return false;
+
+  return jwtParts.every((part) => /^[A-Z0-9_-]+$/i.test(part));
+};
+
 // Check process.env for NEXT_PUBLIC_ prefixed variables
 for (const [key, value] of Object.entries(process.env)) {
   if (key.startsWith('NEXT_PUBLIC_') || key.startsWith('VITE_')) {
     // Check if the key or value contains forbidden names
     const upperKey = key.toUpperCase();
-    const upperValue = (value || '').toUpperCase();
-    
+
     for (const forbidden of forbiddenNames) {
       if (upperKey.includes(forbidden)) {
         console.error(`❌ SECURITY VIOLATION: Public env variable "${key}" contains forbidden name "${forbidden}"`);
         foundViolation = true;
       }
-      
+
       // Check if value looks like it might contain a service role key
-      if (forbidden.includes('SERVICE') && upperValue.includes('EYJA') && upperValue.length > 100) {
+      if (forbidden.includes('SERVICE') && looksLikeServiceRoleKey(value)) {
         console.error(`❌ SECURITY VIOLATION: Public env variable "${key}" appears to contain a service role key`);
         foundViolation = true;
       }
@@ -64,15 +77,14 @@ for (const envFile of envFiles) {
         const [, prefix, name, value] = match;
         const fullKey = prefix + name;
         const upperKey = fullKey.toUpperCase();
-        const upperValue = (value || '').toUpperCase();
-        
+
         for (const forbidden of forbiddenNames) {
           if (upperKey.includes(forbidden)) {
             console.error(`❌ SECURITY VIOLATION in ${envFile}:${i + 1}: Public env variable "${fullKey}" contains forbidden name "${forbidden}"`);
             foundViolation = true;
           }
-          
-          if (forbidden.includes('SERVICE') && upperValue.includes('EYJA') && upperValue.length > 100) {
+
+          if (forbidden.includes('SERVICE') && looksLikeServiceRoleKey(value)) {
             console.error(`❌ SECURITY VIOLATION in ${envFile}:${i + 1}: Public env variable "${fullKey}" appears to contain a service role key`);
             foundViolation = true;
           }
