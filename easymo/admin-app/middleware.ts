@@ -41,9 +41,10 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-  // Set secure httpOnly cookie in production
-  if (!request.cookies.get('admin_actor_id')) {
-    const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production';
+  const shouldSetCookie = isProduction || !request.cookies.get('admin_actor_id');
+
+  if (shouldSetCookie) {
     response.cookies.set('admin_actor_id', actorId, {
       httpOnly: isProduction,
       secure: isProduction,
