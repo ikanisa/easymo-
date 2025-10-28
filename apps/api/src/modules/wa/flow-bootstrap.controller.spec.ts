@@ -127,6 +127,21 @@ describe('FlowBootstrapController', () => {
         .expect(410);
     });
 
+    it('should return 403 when MSISDN is omitted for bound token', async () => {
+      const token = await deeplinkService.issueToken({
+        flow: 'basket_open',
+        msisdn: '+1234567890',
+        ttl: 3600,
+      });
+
+      await request(app.getHttpServer())
+        .post('/whatsappFlow/bootstrap')
+        .send({
+          token,
+        })
+        .expect(403);
+    });
+
     it('should return 403 for MSISDN mismatch', async () => {
       const token = await deeplinkService.issueToken({
         flow: 'basket_open',

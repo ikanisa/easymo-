@@ -141,6 +141,24 @@ describe('DeeplinkController', () => {
         .expect(410);
     });
 
+    it('should return 403 when MSISDN is omitted for bound token', async () => {
+      const issueResponse = await request(app.getHttpServer())
+        .post('/deeplink/issue')
+        .send({
+          flow: 'insurance_attach',
+          msisdn: '+1234567890',
+        });
+
+      const token = issueResponse.body.token;
+
+      await request(app.getHttpServer())
+        .post('/deeplink/resolve')
+        .send({
+          token,
+        })
+        .expect(403);
+    });
+
     it('should return 403 for MSISDN mismatch', async () => {
       // Issue a token with MSISDN binding
       const issueResponse = await request(app.getHttpServer())

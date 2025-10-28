@@ -37,8 +37,14 @@ export class DeeplinkService {
       const boundMsisdn = decoded.msisdn as string | undefined;
 
       // Check MSISDN binding if token has bound MSISDN
-      if (boundMsisdn && data.msisdn && boundMsisdn !== data.msisdn) {
-        throw new ForbiddenException('MSISDN mismatch');
+      if (boundMsisdn) {
+        if (!data.msisdn) {
+          throw new ForbiddenException('MSISDN required');
+        }
+
+        if (boundMsisdn !== data.msisdn) {
+          throw new ForbiddenException('MSISDN mismatch');
+        }
       }
 
       return {
