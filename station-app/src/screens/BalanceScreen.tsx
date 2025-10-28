@@ -5,12 +5,11 @@ import "@station/styles/balance.css";
 
 export const BalanceScreen = () => {
   const { session, client } = useStationSession();
-  const stationId = session?.stationId;
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["station-balance", stationId],
+    queryKey: ["station-balance", session?.stationId],
     queryFn: () => client.balance(),
     staleTime: 60_000,
-    enabled: Boolean(stationId),
+    enabled: Boolean(session?.stationId),
   });
 
   if (!stationId) {

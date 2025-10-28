@@ -6,12 +6,11 @@ import "@station/styles/history.css";
 
 export const HistoryScreen = () => {
   const { session, client } = useStationSession();
-  const stationId = session?.stationId;
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["station-history", stationId],
+    queryKey: ["station-history", session?.stationId],
     queryFn: () => client.history(),
     staleTime: 30_000,
-    enabled: Boolean(stationId),
+    enabled: Boolean(session?.stationId),
   });
 
   if (!stationId) {
