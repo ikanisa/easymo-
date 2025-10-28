@@ -42,8 +42,9 @@ export async function verifyWhatsAppSignature(
     throw new Error("secret_not_configured");
   }
 
-  // Remove 'sha256=' prefix if present
-  const signatureValue = signature.replace(/^sha256=/, "");
+  // Remove 'sha256=' prefix if present and normalize casing/whitespace
+  const signatureValue = signature.replace(/^sha256=/, "").trim();
+  const normalizedSignature = signatureValue.toLowerCase();
 
   // Convert body to Uint8Array if string
   const bodyBytes = typeof rawBody === "string"
@@ -68,9 +69,9 @@ export async function verifyWhatsAppSignature(
     .join("");
 
   // Constant-time comparison
-  if (expectedSignature !== signatureValue) {
+  if (!constantTimeCompare(expectedSignature, normalizedSignature)) {
     logError("signature_verification", "Invalid signature", {
-      providedLength: signatureValue.length,
+      providedLength: normalizedSignature.length,
       expectedLength: expectedSignature.length,
     });
     throw new Error("invalid_signature");
