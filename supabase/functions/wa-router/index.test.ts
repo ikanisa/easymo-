@@ -70,10 +70,12 @@ async function createSignature(body: string, secret: string): Promise<string> {
 Deno.test("wa-router: GET request with valid token returns challenge", async () => {
   const WA_VERIFY_TOKEN = "test_verify_token";
   const challenge = "test_challenge_123";
-  const url = `http://localhost:8000?hub.mode=subscribe&hub.verify_token=${WA_VERIFY_TOKEN}&hub.challenge=${challenge}`;
+  const url = new URL("https://wa-router.test");
+  url.searchParams.set("hub.mode", "subscribe");
+  url.searchParams.set("hub.verify_token", WA_VERIFY_TOKEN);
+  url.searchParams.set("hub.challenge", challenge);
 
-  const req = new Request(url, { method: "GET" });
-  const response = await handleWaRouterRequest(req);
+  const response = await handleWaRouterRequest(new Request(url, { method: "GET" }));
   const body = await response.text();
 
   assertEquals(response.status, 200);
@@ -81,10 +83,12 @@ Deno.test("wa-router: GET request with valid token returns challenge", async () 
 });
 
 Deno.test("wa-router: GET request with invalid token fails", async () => {
-  const url = `http://localhost:8000?hub.mode=subscribe&hub.verify_token=wrong_token&hub.challenge=test`;
+  const url = new URL("https://wa-router.test");
+  url.searchParams.set("hub.mode", "subscribe");
+  url.searchParams.set("hub.verify_token", "wrong_token");
+  url.searchParams.set("hub.challenge", "test");
 
-  const req = new Request(url, { method: "GET" });
-  const response = await handleWaRouterRequest(req);
+  const response = await handleWaRouterRequest(new Request(url, { method: "GET" }));
 
   assertEquals(response.status, 403);
 });
