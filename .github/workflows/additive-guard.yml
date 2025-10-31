@@ -39,14 +39,14 @@ jobs:
                 ;;
               supabase/functions/*)
                 # Other functions: only block if file already exists (modification)
-                if git ls-tree --name-only "$BASE_SHA" -- "$file" >/dev/null 2>&1; then
+                if git cat-file -e "$BASE_SHA:$file" 2>/dev/null; then
                   echo "::error file=$file::Forbidden path violation: cannot modify existing function.";
                   status=1
                 fi
                 ;;
               supabase/migrations/*)
                 # Migrations: only block if file already exists (modification)
-                if git ls-tree --name-only "$BASE_SHA" -- "$file" >/dev/null 2>&1; then
+                if git cat-file -e "$BASE_SHA:$file" 2>/dev/null; then
                   echo "::error file=$file::Existing migration cannot be modified.";
                   status=1
                 fi
