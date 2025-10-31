@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateAgentToolRequest } from "shared/auth.ts";
-import { isFeatureEnabled } from "shared/feature-flags.ts";
+import {
+  isAgentVoucherFeatureEnabled,
+  verifyAgentToolAuth,
+} from "../_shared/agent-auth.ts";
 
 /**
  * AI Agent Tool: Create Voucher
@@ -23,7 +25,7 @@ interface CreateVoucherResponse {
   error?: string;
 }
 
-const RESPONSE_HEADERS: HeadersInit = {
+const JSON_HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
 };
@@ -58,41 +60,37 @@ serve(async (req: Request): Promise<Response> => {
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ success: false, error: "Method not allowed" }),
-        { status: 405, headers: RESPONSE_HEADERS }
+        { status: 405, headers: JSON_HEADERS }
       );
     }
 
-    if (!isFeatureEnabled("agent.vouchers")) {
-      console.warn(
+    if (!isAgentVoucherFeatureEnabled()) {
+      console.log(
         JSON.stringify({
           event: "ai.tool.create_voucher.feature_disabled",
           correlation_id: correlationId,
-        }),
+          timestamp: new Date().toISOString(),
+        })
       );
+
       return new Response(
-        JSON.stringify({ success: false, error: "Feature disabled" }),
-        { status: 403, headers: RESPONSE_HEADERS },
+        JSON.stringify({ success: false, error: "feature_disabled" }),
+        { status: 403, headers: JSON_HEADERS }
       );
     }
 
-    const authCheck = validateAgentToolRequest(req);
-    if (!authCheck.ok) {
-      const reason = authCheck.reason === "missing_token"
-        ? "agent_voucher_token_not_configured"
-        : "unauthorized";
-      console.error(
+    if (!verifyAgentToolAuth(req, correlationId)) {
+      console.warn(
         JSON.stringify({
-          event: "ai.tool.create_voucher.auth_failed",
+          event: "ai.tool.create_voucher.unauthorized",
           correlation_id: correlationId,
-          reason,
-        }),
+          timestamp: new Date().toISOString(),
+        })
       );
+
       return new Response(
-        JSON.stringify({ success: false, error: reason }),
-        {
-          status: authCheck.reason === "missing_token" ? 500 : 401,
-          headers: RESPONSE_HEADERS,
-        },
+        JSON.stringify({ success: false, error: "unauthorized" }),
+        { status: 401, headers: JSON_HEADERS }
       );
     }
 
@@ -104,14 +102,14 @@ serve(async (req: Request): Promise<Response> => {
     if (!customer_msisdn || typeof customer_msisdn !== "string") {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid customer_msisdn" }),
-        { status: 400, headers: RESPONSE_HEADERS }
+        { status: 400, headers: JSON_HEADERS }
       );
     }
 
     if (!amount || typeof amount !== "number" || amount <= 0) {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid amount" }),
-        { status: 400, headers: RESPONSE_HEADERS }
+        { status: 400, headers: JSON_HEADERS }
       );
     }
 
@@ -177,7 +175,7 @@ serve(async (req: Request): Promise<Response> => {
           success: false,
           error: error.message,
         } as CreateVoucherResponse),
-        { status: 200, headers: RESPONSE_HEADERS }
+        { status: 200, headers: JSON_HEADERS }
       );
     }
 
@@ -201,7 +199,7 @@ serve(async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify(response), {
       status: 200,
-      headers: RESPONSE_HEADERS,
+      headers: JSON_HEADERS,
     });
   } catch (err) {
     console.error(
@@ -217,7 +215,7 @@ serve(async (req: Request): Promise<Response> => {
         success: false,
         error: "Internal server error",
       } as CreateVoucherResponse),
-      { status: 500, headers: RESPONSE_HEADERS }
+      { status: 500, headers: JSON_HEADERS }
     );
   }
 });
