@@ -106,6 +106,7 @@ export function SessionDrawer({ sessionId, onClose }: SessionDrawerProps) {
 
   const session: AgentSession = data.session;
   const quotes: AgentQuote[] = data.quotes || [];
+  const maxExtensions = session.max_extensions ?? 2;
 
   return (
     <Drawer title={`Session ${session.id.slice(0, 8)}...`} onClose={onClose}>
@@ -149,7 +150,9 @@ export function SessionDrawer({ sessionId, onClose }: SessionDrawerProps) {
           </div>
           <div>
             <div className="text-gray-600">Extensions</div>
-            <div className="font-medium">{session.extensions_count}/2</div>
+            <div className="font-medium">
+              {session.extensions_count}/{maxExtensions}
+            </div>
           </div>
         </div>
       </div>
@@ -229,10 +232,10 @@ export function SessionDrawer({ sessionId, onClose }: SessionDrawerProps) {
           <div className="flex gap-3">
             <Button
               onClick={handleExtendDeadline}
-              disabled={session.extensions_count >= 2 || updateSession.isPending}
+              disabled={session.extensions_count >= maxExtensions || updateSession.isPending}
               variant="outline"
             >
-              Extend +2 min ({session.extensions_count}/2)
+              Extend +2 min ({session.extensions_count}/{maxExtensions})
             </Button>
             <Button
               onClick={handleCancel}

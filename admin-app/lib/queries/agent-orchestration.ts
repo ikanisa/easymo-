@@ -35,6 +35,7 @@ export interface AgentSession {
   deadline_at: string;
   completed_at?: string;
   extensions_count: number;
+  max_extensions?: number;
   selected_quote_id?: string;
   cancellation_reason?: string;
   metadata: Record<string, unknown>;
