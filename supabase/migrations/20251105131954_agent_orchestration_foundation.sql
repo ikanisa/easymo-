@@ -118,7 +118,8 @@ CREATE TABLE IF NOT EXISTS public.agent_quotes (
   received_at TIMESTAMPTZ,
   expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+  CONSTRAINT agent_quotes_session_vendor_unique UNIQUE (session_id, vendor_phone)
 );
 
 -- Indexes for agent_quotes
