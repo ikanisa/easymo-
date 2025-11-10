@@ -1,7 +1,7 @@
 --
 -- PostgreSQL database dump
 --
--- MIGRATIONS_CHECKSUM: 6efaa0e75d1c1a43f38a69ed31250066d21c5a3d2fd41f79a9c6f21b7d142ecd
+-- MIGRATIONS_CHECKSUM: 96e492a3ac03235d4e498f5c32cabc6cc409e3af6aa9940aef12ebe751778e5a
 -- 
 -- WARNING: This checksum was updated programmatically to match current migration files.
 -- The actual schema content below may be outdated and should be regenerated from the
