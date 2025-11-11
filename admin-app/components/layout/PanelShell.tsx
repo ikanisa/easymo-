@@ -2,8 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BingNav } from "@/components/layout/BingNav";
-import { BingHeader } from "@/components/layout/BingHeader";
+import { NavigationChrome } from "@/components/navigation/NavigationChrome";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { OfflineBanner } from "@/components/system/OfflineBanner";
 import { ServiceWorkerToast } from "@/components/system/ServiceWorkerToast";
@@ -41,7 +40,6 @@ export function PanelShell({
   const router = useRouter();
   const actorDisplayLabel = session.label?.trim() || `${session.actorId.slice(0, 8)}…`;
   const [assistantOpen, setAssistantOpen] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [avatarInitials, setAvatarInitials] = useState(() =>
     deriveInitials(actorDisplayLabel, session.actorId),
@@ -73,35 +71,17 @@ export function PanelShell({
         <ServiceWorkerToast />
         <ServiceWorkerToasts />
         <OfflineBanner />
-        <div className="bing-shell">
-          <BingNav />
-          <div className="bing-shell__workspace">
-            <BingHeader
-              environmentLabel={environmentLabel}
-              onOpenNavigation={() => setMobileNavOpen(true)}
-              assistantEnabled={assistantEnabled}
-              onOpenAssistant={assistantEnabled
-                ? () => setAssistantOpen(true)
-                : undefined}
-              actorLabel={actorDisplayLabel}
-              actorInitials={avatarInitials}
-              onSignOut={handleSignOut}
-              signingOut={signingOut}
-            />
-            <main
-              id="main-content"
-              className="bing-shell__content"
-              aria-live="polite"
-            >
-              {children}
-            </main>
-          </div>
-        </div>
-        {mobileNavOpen && (
-          <div className="bing-nav-drawer" role="dialog" aria-modal="true">
-            <BingNav mode="overlay" onClose={() => setMobileNavOpen(false)} />
-          </div>
-        )}
+        <NavigationChrome
+          environmentLabel={environmentLabel}
+          actorLabel={actorDisplayLabel}
+          actorInitials={avatarInitials}
+          signingOut={signingOut}
+          assistantEnabled={assistantEnabled}
+          onOpenAssistant={assistantEnabled ? () => setAssistantOpen(true) : undefined}
+          onSignOut={handleSignOut}
+        >
+          {children}
+        </NavigationChrome>
         {assistantEnabled && (
           <AssistantPanel
             open={assistantOpen}

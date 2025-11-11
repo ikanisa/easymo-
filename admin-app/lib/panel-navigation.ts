@@ -29,35 +29,35 @@ export interface PanelBreadcrumb {
 }
 
 const defaultDescription =
-  "Operational console for the Insurance Agent workflow and supporting admin utilities.";
+  "Unified operations environment for the Insurance Command program and supporting tooling.";
 
 const panelRoot: PanelNavItem = {
   href: "/insurance",
-  title: "Insurance Agent",
+  title: "Insurance Command Hub",
   icon: "🛡️",
   description:
-    "Human-in-the-loop underwriting, OCR review, and approvals for insurance submissions.",
+    "Operational console for insurance submissions, underwriting workflows, and approvals.",
 };
 
 const adminUtilitiesGroup: PanelNavGroup = {
   id: "utilities",
-  title: "Admin Utilities",
-  description: "Cross-functional tooling that supports the Insurance Agent rollout.",
+  title: "Operations Toolkit",
+  description: "Cross-functional controls that support the Insurance Command program.",
   links: [
-    { href: "/notifications", title: "Notifications" },
+    { href: "/notifications", title: "Alerts Center" },
     { href: "/logs", title: "System Logs" },
-    { href: "/settings", title: "Settings" },
-    { href: "/users", title: "Users" },
-    { href: "/trips", title: "Trips" },
+    { href: "/settings", title: "Workspace Settings" },
+    { href: "/users", title: "Customer Directory" },
+    { href: "/trips", title: "Trip Ledger" },
     { href: "/marketplace", title: "Marketplace" },
-    { href: "/menus", title: "Menus" },
-    { href: "/files", title: "Files" },
-    { href: "/qr", title: "QR Codes" },
-    { href: "/whatsapp-health", title: "WhatsApp Health" },
+    { href: "/menus", title: "Menu Operations" },
+    { href: "/files", title: "File Vault" },
+    { href: "/qr", title: "Token Programs" },
+    { href: "/whatsapp-health", title: "Messaging Health" },
     { href: "/live-calls", title: "Live Calls" },
     { href: "/voice-analytics", title: "Voice Analytics" },
-    { href: "/vendor-responses", title: "Vendor Responses" },
-    { href: "/negotiations", title: "Negotiations" },
+    { href: "/vendor-responses", title: "Vendor Inbox" },
+    { href: "/negotiations", title: "Negotiation Desk" },
     { href: "/agent-orchestration", title: "Agent Orchestration" },
     { href: "/wallet/topup", title: "Wallet Top-up" },
   ],
@@ -98,7 +98,7 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     description: panelRoot.description ?? defaultDescription,
   },
   "/notifications": {
-    title: "Notifications",
+    title: "Alerts Center",
     description: "Preview outbound alerts and confirm delivery health across channels.",
   },
   "/logs": {
@@ -106,15 +106,15 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     description: "Investigate platform events, webhook retries, and integration noise.",
   },
   "/settings": {
-    title: "Settings",
+    title: "Workspace Settings",
     description: "Toggle feature flags, update credentials, and manage rollout controls.",
   },
   "/users": {
-    title: "Users",
+    title: "Customer Directory",
     description: "Search operators, review profiles, and stage messaging follow-ups.",
   },
   "/trips": {
-    title: "Trips",
+    title: "Trip Ledger",
     description: "Audit trip requests, expirations, and fulfillment states across tenants.",
   },
   "/marketplace": {
@@ -126,19 +126,19 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     description: "Adjust vendor entitlements, contact windows, and subscription quotas.",
   },
   "/menus": {
-    title: "Menus",
+    title: "Menu Operations",
     description: "Manage menu syncs, price accuracy checks, and content completeness.",
   },
   "/files": {
-    title: "Files",
+    title: "File Vault",
     description: "Inspect uploaded assets, OCR extracts, and pipeline processing states.",
   },
   "/qr": {
-    title: "QR Codes",
+    title: "Token Programs",
     description: "Generate ordering codes and confirm routing details for storefronts.",
   },
   "/whatsapp-health": {
-    title: "WhatsApp Health",
+    title: "Messaging Health",
     description: "Monitor template delivery, opt-outs, and live conversation health.",
   },
   "/live-calls": {
@@ -150,11 +150,11 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     description: "Review transcription quality and AI scoring pipelines for calls.",
   },
   "/vendor-responses": {
-    title: "Vendor Responses",
+    title: "Vendor Inbox",
     description: "Track marketplace vendor replies, SLAs, and negotiation outcomes.",
   },
   "/negotiations": {
-    title: "Negotiations",
+    title: "Negotiation Desk",
     description: "Inspect AI-led negotiation transcripts and pricing adjustments.",
   },
   "/agent-orchestration": {

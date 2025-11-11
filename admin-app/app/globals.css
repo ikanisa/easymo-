@@ -550,24 +550,57 @@
     outline-offset: 2px;
   }
 
+  .panel-skip-link {
+    position: absolute;
+    left: -999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    background: #1d4ed8;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 40;
+  }
+
+  .panel-skip-link:focus {
+    left: 24px;
+    top: 18px;
+    width: auto;
+    height: auto;
+    clip: auto;
+  }
+
+  .panel-chrome {
+    display: flex;
   .bing-shell {
     min-height: 100vh;
     display: grid;
     grid-template-columns: minmax(var(--sidebar-width), 20rem) minmax(0, 1fr);
     background: linear-gradient(135deg, #f8faff 0%, #ecf4ff 45%, #e5ebff 100%);
     color: var(--color-foreground);
+    position: relative;
   }
 
+  .panel-chrome__workspace {
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.9);
   .bing-shell__workspace {
     min-height: 100vh;
     display: grid;
     grid-template-rows: auto 1fr;
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(12px);
-    border-left: 1px solid rgba(99, 102, 241, 0.15);
+    border-left: 1px solid rgba(15, 23, 42, 0.08);
   }
 
-  .bing-shell__content {
+  .panel-chrome__content {
     flex: 1;
     padding: var(--space-section-y) var(--layout-gutter);
     margin-inline: auto;
@@ -737,6 +770,15 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  .panel-sidebar {
+    width: 288px;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    background: rgba(15, 23, 42, 0.94);
+    color: rgba(255, 255, 255, 0.9);
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
   .bing-nav {
     width: clamp(16rem, 18vw, var(--sidebar-width));
     padding: var(--space-7) var(--space-6);
@@ -750,181 +792,239 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.15);
   }
 
-  .bing-nav__header {
+  .panel-sidebar--overlay {
+    position: relative;
+    height: 100%;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.45);
+  }
+
+  .panel-sidebar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
-  .bing-nav__logo {
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-
-  .bing-nav__tagline {
-    margin: 0;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  .bing-nav__close {
-    border: none;
-    background: transparent;
-    color: inherit;
-    font-size: 1.1rem;
-    cursor: pointer;
-  }
-
-  .bing-nav__section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .bing-nav__sections {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .bing-nav__section-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
-    margin: 0;
-  }
-
-  .bing-search__icon {
-    font-size: 1rem;
-    opacity: 0.6;
-  }
-
-  .bing-nav__section-items {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .bing-nav__item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    color: rgba(255, 255, 255, 0.85);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-
-  .bing-nav__item:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .bing-nav__item--active {
-    background: rgba(255, 255, 255, 0.18);
-    color: #fff;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-  }
-
-  .bing-nav__icon {
-    font-size: 1.1rem;
-    width: 1.5rem;
-  }
-
-  .bing-header {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 24px;
-    padding: 24px clamp(1.5rem, 4vw, 3.5rem);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    position: sticky;
-    top: 0;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    z-index: 10;
-  }
-
-  .bing-header__brand {
-    display: flex;
+  .panel-sidebar__brand {
+    display: inline-flex;
     align-items: center;
     gap: 12px;
   }
 
-  .bing-header__brand-meta {
+  .panel-sidebar__glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 1.1rem;
+  }
+
+  .panel-sidebar__title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .panel-sidebar__subtitle {
+    margin: 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .panel-sidebar__close {
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 1rem;
+  }
+
+  .panel-sidebar__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .panel-sidebar__section-label {
+    margin: 0 0 10px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .panel-sidebar__section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .panel-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    transition: background 0.16s ease, color 0.16s ease;
+  }
+
+  .panel-sidebar__link:hover,
+  .panel-sidebar__link:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    outline: none;
+  }
+
+  .panel-sidebar__link--active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
+  .panel-sidebar__close:focus-visible,
+  .panel-sidebar__link:focus-visible,
+  .panel-topbar__menu:focus-visible,
+  .panel-icon-button:focus-visible,
+  .panel-search__submit:focus-visible {
+    outline: 3px solid var(--color-outline, rgba(37, 99, 235, 0.6));
+    outline-offset: 2px;
+  }
+
+  .panel-sidebar__icon {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+
+  .panel-sidebar__label {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .panel-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    padding: 24px clamp(1.5rem, 4vw, 3.5rem);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 12;
+  }
+
+  .panel-topbar__primary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-width: 220px;
+  }
+
+  .panel-topbar__menu {
+    display: none;
+    border: none;
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 1rem;
+  }
+
+  .panel-topbar__menu--visible {
+    display: inline-flex;
+  }
+
+  .panel-topbar__meta {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
-  .bing-header__title {
+  .panel-topbar__title {
     margin: 0;
     font-weight: 700;
     font-size: 1.1rem;
   }
 
-  .bing-chip {
+  .panel-chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 0 10px;
     border-radius: 999px;
     font-size: 0.75rem;
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(37, 99, 235, 0.12);
     color: #1d4ed8;
     width: fit-content;
   }
 
-  .bing-header__menu {
-    display: none;
-    border: none;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
-    padding: 6px 10px;
-    font-size: 1rem;
+  .panel-topbar__secondary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 360px;
+    min-width: 260px;
+    justify-content: flex-end;
   }
 
-  .bing-header__menu--visible {
-    display: inline-flex;
-  }
-
-  .bing-search {
+  .panel-search {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(15, 23, 42, 0.04);
+    background: rgba(15, 23, 42, 0.05);
     border-radius: 999px;
     padding: 0 12px;
     border: 1px solid rgba(15, 23, 42, 0.08);
+    flex: 1;
   }
 
-  .bing-search input {
+  .panel-search input {
     flex: 1;
     border: none;
     background: transparent;
     font-size: 0.95rem;
-    padding: 12px 0;
+    padding: 10px 0;
     outline: none;
   }
 
-  .bing-search button {
+  .panel-search__icon {
+    font-size: 1rem;
+    opacity: 0.6;
+  }
+
+  .panel-search__submit {
     border: none;
     background: #2563eb;
     color: #fff;
     border-radius: 999px;
     padding: 6px 14px;
     font-size: 0.85rem;
+    font-weight: 600;
   }
 
-  .bing-header__actions {
+  .panel-topbar__actions {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    white-space: nowrap;
   }
 
-  .bing-icon-button {
+  .panel-icon-button {
     border: none;
     background: rgba(15, 23, 42, 0.08);
     border-radius: 12px;
@@ -933,7 +1033,7 @@
     cursor: pointer;
   }
 
-  .bing-avatar {
+  .panel-avatar {
     width: 40px;
     height: 40px;
     border-radius: 12px;
@@ -945,45 +1045,131 @@
     justify-content: center;
   }
 
-  .bing-nav-drawer {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(6px);
+  .panel-breadcrumbs {
     display: flex;
-    justify-content: flex-start;
-    z-index: 20;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--color-muted, rgba(15, 23, 42, 0.65));
   }
 
-  .bing-nav--overlay {
-    position: relative;
+  .panel-breadcrumbs ol {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .panel-breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-breadcrumbs li + li::before {
+    content: "/";
+    color: rgba(15, 23, 42, 0.35);
+  }
+
+  .panel-breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .panel-breadcrumbs a:hover,
+  .panel-breadcrumbs a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .panel-chrome__mobile {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 30;
+  }
+
+  .panel-chrome__mobile--visible {
+    pointer-events: auto;
+    opacity: 1;
+  }
+
+  .panel-chrome__backdrop {
+    position: absolute;
+    inset: 0;
+    border: none;
+    background: rgba(15, 23, 42, 0.6);
+  }
+
+  .panel-chrome__dialog {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(320px, 100%);
+    display: flex;
     height: 100%;
   }
 
   @media (max-width: 1024px) {
-    .bing-nav {
+    .panel-sidebar {
       display: none;
     }
 
-    .bing-header {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 16px;
+    .panel-chrome__workspace {
+      border-left: none;
     }
 
-    .bing-header__actions {
-      justify-content: flex-end;
+    .panel-topbar {
+      padding: 20px clamp(1.25rem, 5vw, 3rem);
+      gap: 18px;
     }
 
-    .bing-header__menu {
+    .panel-topbar__primary {
+      flex: 1 1 100%;
+      order: 1;
+    }
+
+    .panel-topbar__secondary {
+      flex: 1 1 100%;
+      order: 3;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-topbar__menu--visible {
       display: inline-flex;
     }
 
-    .bing-search {
-      order: 3;
+    .panel-search {
+      order: 1;
+      min-width: 100%;
+    }
+
+    .panel-topbar__actions {
+      order: 2;
+      width: 100%;
+      justify-content: flex-end;
+      gap: 8px;
     }
   }
 
   @media (max-width: 768px) {
+    .panel-chrome__content {
+      padding: 24px 20px 80px;
+    }
+
+    .panel-topbar {
+      padding: 16px 20px;
+    }
+
+    .panel-topbar__actions {
+      gap: 6px;
+    }
+
+    .panel-icon-button {
     .bing-shell__content,
     .dashboard-shell__content {
       padding: var(--space-6) var(--layout-gutter-tight)
