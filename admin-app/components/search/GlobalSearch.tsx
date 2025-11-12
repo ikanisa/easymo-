@@ -76,6 +76,7 @@ export function GlobalSearch({
   const [results, setResults] = useState<OmniSearchResult[]>([]);
   const [suggestions, setSuggestions] = useState<OmniSearchSuggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const requestRef = useRef<AbortController | null>(null);
   const lastQueryRef = useRef<string | null>(null);
@@ -168,7 +169,11 @@ export function GlobalSearch({
         return;
       }
 
-      if (isEditableTarget(event.target)) {
+      const targetNode = event.target instanceof Node ? event.target : null;
+      if (
+        isEditableTarget(event.target) &&
+        (!targetNode || !containerRef.current?.contains(targetNode))
+      ) {
         return;
       }
 
@@ -337,7 +342,7 @@ export function GlobalSearch({
   }, [errorMessage, status]);
 
   return (
-    <div className={styles.container}>
+    <div ref={containerRef} className={styles.container}>
       <div className={styles.inputWrapper}>
         <Search className="h-4 w-4 text-slate-400" aria-hidden />
         <input
