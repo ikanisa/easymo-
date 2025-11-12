@@ -46,43 +46,43 @@ export async function fetchOmniSearchSuggestions(
   const normalizedQuery = normaliseQuery(query);
   const likePattern = normalizedQuery ? `%${normalizedQuery}%` : null;
 
+  const agentsQuery = supabase
+    .from("agent_registry")
+    .select("id, agent_type, name, description");
+  const requestsQuery = supabase
+    .from("agent_sessions")
+    .select("id, agent_type, status");
+  const policiesQuery = supabase
+    .from("settings")
+    .select("key, description");
+  const tasksQuery = supabase
+    .from("agent_tasks")
+    .select("id, title, status");
+
+  const filteredAgentsQuery = likePattern
+    ? agentsQuery.or(`name.ilike.${likePattern},agent_type.ilike.${likePattern}`)
+    : agentsQuery;
+  const filteredRequestsQuery = likePattern
+    ? requestsQuery.ilike("agent_type", likePattern)
+    : requestsQuery;
+  const filteredPoliciesQuery = likePattern
+    ? policiesQuery.ilike("key", likePattern)
+    : policiesQuery;
+  const filteredTasksQuery = likePattern
+    ? tasksQuery.or(`title.ilike.${likePattern},status.ilike.${likePattern}`)
+    : tasksQuery;
+
   const [agentsRes, requestsRes, policiesRes, tasksRes] = await Promise.allSettled([
-    supabase
-      .from("agent_registry")
-      .select("id, agent_type, name, description")
-      .modify((builder) =>
-        likePattern
-          ? builder.or(
-              `name.ilike.${likePattern},agent_type.ilike.${likePattern}`,
-            )
-          : builder,
-      )
+    filteredAgentsQuery
       .order("updated_at", { ascending: false })
       .limit(limitPerCategory),
-    supabase
-      .from("agent_sessions")
-      .select("id, agent_type, status")
-      .modify((builder) =>
-        likePattern ? builder.ilike("agent_type", likePattern) : builder,
-      )
+    filteredRequestsQuery
       .order("started_at", { ascending: false })
       .limit(limitPerCategory),
-    supabase
-      .from("settings")
-      .select("key, description")
-      .modify((builder) =>
-        likePattern ? builder.ilike("key", likePattern) : builder,
-      )
+    filteredPoliciesQuery
       .order("updated_at", { ascending: false })
       .limit(limitPerCategory),
-    supabase
-      .from("agent_tasks")
-      .select("id, title, status")
-      .modify((builder) =>
-        likePattern
-          ? builder.or(`title.ilike.${likePattern},status.ilike.${likePattern}`)
-          : builder,
-      )
+    filteredTasksQuery
       .order("created_at", { ascending: false })
       .limit(limitPerCategory),
   ]);
