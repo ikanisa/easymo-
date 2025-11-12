@@ -20,11 +20,13 @@ type CacheEntry = {
   promise: Promise<StoredResponse>;
   resolve: (value: StoredResponse) => void;
   response?: StoredResponse;
+  timeoutId?: NodeJS.Timeout;
 };
 
 class IdempotencyStore {
   private cache = new Map<string, CacheEntry>();
   private readonly ttlMs = 24 * 60 * 60 * 1000; // 24 hours
+  private readonly pendingTtlMs = 60 * 1000; // 60 seconds for unresolved entries
 
   get(key: string): CacheEntry | null {
     const entry = this.cache.get(key);
@@ -57,6 +59,23 @@ class IdempotencyStore {
     };
 
     this.cache.set(key, entry);
+    entry.timeoutId = setTimeout(() => {
+      const candidate = this.cache.get(key);
+      if (!candidate || candidate !== entry || candidate.response) {
+        return;
+      }
+
+      const timeoutResponse: StoredResponse = {
+        status: 504,
+        data: {
+          error: "Idempotent request timed out",
+        },
+        hasBody: true,
+      };
+
+      candidate.resolve(timeoutResponse);
+      this.cache.delete(key);
+    }, this.pendingTtlMs);
     this.cleanup();
 
     return entry;
@@ -68,6 +87,10 @@ class IdempotencyStore {
 
     entry.response = payload;
     entry.timestamp = Date.now();
+    if (entry.timeoutId) {
+      clearTimeout(entry.timeoutId);
+      delete entry.timeoutId;
+    }
     entry.resolve(payload);
 
     this.cleanup();
@@ -77,6 +100,10 @@ class IdempotencyStore {
     const entry = this.cache.get(key);
     if (!entry) return;
 
+    if (entry.timeoutId) {
+      clearTimeout(entry.timeoutId);
+      delete entry.timeoutId;
+    }
     entry.resolve(payload);
     this.cache.delete(key);
   }
@@ -89,6 +116,23 @@ class IdempotencyStore {
     const now = Date.now();
     for (const [key, entry] of this.cache.entries()) {
       if (entry.response && now - entry.timestamp > this.ttlMs) {
+        this.cache.delete(key);
+        continue;
+      }
+
+      if (!entry.response && now - entry.timestamp > this.pendingTtlMs) {
+        if (entry.timeoutId) {
+          clearTimeout(entry.timeoutId);
+          delete entry.timeoutId;
+        }
+
+        entry.resolve({
+          status: 504,
+          data: {
+            error: "Idempotent request timed out",
+          },
+          hasBody: true,
+        });
         this.cache.delete(key);
       }
     }
