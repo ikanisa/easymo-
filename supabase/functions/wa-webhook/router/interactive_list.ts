@@ -46,14 +46,16 @@ import {
   startMarketplace,
 } from "../domains/marketplace/index.ts";
 import { sendHomeMenu } from "../flows/home.ts";
-import { startNearbyPharmacies } from "../domains/healthcare/pharmacies.ts";
-import { startNearbyQuincailleries } from "../domains/healthcare/quincailleries.ts";
 import {
   handlePharmacyResultSelection,
+  handlePharmacySavedLocationSelection,
+  startNearbyPharmacies,
   type PharmacyResultsState,
 } from "../domains/healthcare/pharmacies.ts";
 import {
   handleQuincaillerieResultSelection,
+  handleQuincaillerieSavedLocationSelection,
+  startNearbyQuincailleries,
   type QuincaResultsState,
 } from "../domains/healthcare/quincailleries.ts";
 import {
@@ -134,6 +136,20 @@ export async function handleList(
         state.data as PropertySavedPickerState,
         id,
       );
+    }
+    if (
+      state.data?.source === "pharmacy" &&
+      !LOCATION_KIND_BY_ID[id] &&
+      id !== IDS.BACK_MENU
+    ) {
+      return await handlePharmacySavedLocationSelection(ctx, id);
+    }
+    if (
+      state.data?.source === "quincaillerie" &&
+      !LOCATION_KIND_BY_ID[id] &&
+      id !== IDS.BACK_MENU
+    ) {
+      return await handleQuincaillerieSavedLocationSelection(ctx, id);
     }
   }
 

@@ -52,6 +52,12 @@ import {
 } from "../domains/locations/save.ts";
 import { startSavedPlaces } from "../domains/locations/manage.ts";
 import { startPropertySavedLocationPicker } from "../domains/property/rentals.ts";
+import {
+  handlePharmacySearchNow,
+  promptPharmacyMedicineInput,
+  startPharmacySavedLocationPicker,
+} from "../domains/healthcare/pharmacies.ts";
+import { startQuincaillerieSavedLocationPicker } from "../domains/healthcare/quincailleries.ts";
 
 export async function handleButton(
   ctx: RouterContext,
@@ -167,6 +173,12 @@ export async function handleButton(
           (state.data ?? {}) as any,
         );
       }
+      if (state.key === "pharmacy_awaiting_location") {
+        return await startPharmacySavedLocationPicker(ctx);
+      }
+      if (state.key === "quincaillerie_awaiting_location") {
+        return await startQuincaillerieSavedLocationPicker(ctx);
+      }
       return false;
     case IDS.SAVED_PLACES:
       return await startSavedPlaces(ctx);
@@ -204,6 +216,19 @@ export async function handleButton(
     case IDS.ADMIN_INSURANCE_ASSIGN_SUBMIT:
     case IDS.ADMIN_INSURANCE_EXPORT_SUBMIT:
       if (await handleInsuranceButton(ctx, id, state)) return true;
+      return false;
+    case "pharmacy_add_medicine":
+      if (state.key === "pharmacy_awaiting_medicine") {
+        return await promptPharmacyMedicineInput(ctx);
+      }
+      return false;
+    case "pharmacy_search_now":
+      if (state.key === "pharmacy_awaiting_medicine") {
+        return await handlePharmacySearchNow(
+          ctx,
+          (state.data ?? {}) as { location?: { lat: number; lng: number } },
+        );
+      }
       return false;
 
     default:

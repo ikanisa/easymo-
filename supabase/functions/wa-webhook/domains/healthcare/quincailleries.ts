@@ -10,10 +10,15 @@ import {
 } from "../../utils/reply.ts";
 import { isFeatureEnabled } from "../../../_shared/feature-flags.ts";
 import { IDS } from "../../wa/ids.ts";
-import { t } from "../../i18n/translator.ts";
 import { routeToAIAgent, sendAgentOptions } from "../ai-agents/index.ts";
 import { waChatLink } from "../../utils/links.ts";
 import { listBusinesses } from "../../rpc/marketplace.ts";
+import {
+  getFavoriteById,
+  listFavorites,
+  type UserFavorite,
+} from "../locations/favorites.ts";
+import { buildSaveRows } from "../locations/save.ts";
 
 const QUINCA_RESULT_PREFIX = "QUIN::";
 
@@ -34,11 +39,6 @@ export async function startNearbyQuincailleries(
 
   await sendButtonsMessage(
     ctx,
-    t(ctx.locale, "quincaillerie.start.prompt"),
-    buildButtons(
-      { id: IDS.LOCATION_SAVED_LIST, title: t(ctx.locale, "location.saved.button") },
-      { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") }
-    )
     t(ctx.locale, "quincaillerie.flow.intro"),
     buildButtons(
       {
@@ -47,6 +47,7 @@ export async function startNearbyQuincailleries(
       },
       { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") },
     ),
+    { emoji: "🔧" },
   );
 
   return true;
@@ -67,18 +68,73 @@ export async function handleQuincaillerieLocation(
 
   await sendButtonsMessage(
     ctx,
-    t(ctx.locale, "quincaillerie.location.received"),
-    buildButtons(
-      { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") }
-    )
     t(ctx.locale, "quincaillerie.flow.location_received"),
-    buildButtons({
-      id: IDS.BACK_HOME,
-      title: t(ctx.locale, "common.menu_back"),
-    }),
+    buildButtons({ id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") }),
+    { emoji: "📍" },
   );
 
   return true;
+}
+
+export async function startQuincaillerieSavedLocationPicker(
+  ctx: RouterContext,
+): Promise<boolean> {
+  if (!ctx.profileId) return false;
+  const favorites = await listFavorites(ctx);
+
+  await setState(ctx.supabase, ctx.profileId, {
+    key: "location_saved_picker",
+    data: { source: "quincaillerie" },
+  });
+
+  const baseBody = t(ctx.locale, "location.saved.list.body", {
+    context: t(ctx.locale, "location.context.pickup"),
+  });
+  const body = favorites.length
+    ? baseBody
+    : `${baseBody}\n\n${t(ctx.locale, "location.saved.list.empty")}`;
+
+  await sendListMessage(
+    ctx,
+    {
+      title: t(ctx.locale, "location.saved.list.title"),
+      body,
+      sectionTitle: t(ctx.locale, "location.saved.list.section"),
+      rows: [
+        ...favorites.map(favoriteToRow),
+        ...buildSaveRows(ctx),
+        {
+          id: IDS.BACK_MENU,
+          title: t(ctx.locale, "common.menu_back"),
+          description: t(ctx.locale, "common.back_to_menu.description"),
+        },
+      ],
+      buttonText: t(ctx.locale, "location.saved.list.button"),
+    },
+    { emoji: "⭐" },
+  );
+
+  return true;
+}
+
+export async function handleQuincaillerieSavedLocationSelection(
+  ctx: RouterContext,
+  selectionId: string,
+): Promise<boolean> {
+  if (!ctx.profileId) return false;
+  const favorite = await getFavoriteById(ctx, selectionId);
+  if (!favorite) {
+    await sendButtonsMessage(
+      ctx,
+      t(ctx.locale, "location.saved.list.expired"),
+      homeOnly(),
+    );
+    return true;
+  }
+  return await handleQuincaillerieLocation(ctx, {
+    lat: favorite.lat,
+    lng: favorite.lng,
+  });
 }
 
 export async function processQuincaillerieRequest(
@@ -125,6 +181,17 @@ function parseKeywords(input: string): string[] {
   return input.split(/[\n,]+/)
     .map((part) => part.trim())
     .filter((part) => part.length > 1);
+}
+
+function favoriteToRow(
+  favorite: UserFavorite,
+): { id: string; title: string; description?: string } {
+  return {
+    id: favorite.id,
+    title: `⭐ ${favorite.label}`,
+    description: favorite.address ??
+      `${favorite.lat.toFixed(4)}, ${favorite.lng.toFixed(4)}`,
+  };
 }
 
 async function tryQuincaillerieAgent(

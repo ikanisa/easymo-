@@ -10,10 +10,15 @@ import {
 } from "../../utils/reply.ts";
 import { isFeatureEnabled } from "../../../_shared/feature-flags.ts";
 import { IDS } from "../../wa/ids.ts";
-import { t } from "../../i18n/translator.ts";
 import { routeToAIAgent, sendAgentOptions } from "../ai-agents/index.ts";
 import { waChatLink } from "../../utils/links.ts";
 import { listBusinesses } from "../../rpc/marketplace.ts";
+import {
+  getFavoriteById,
+  listFavorites,
+  type UserFavorite,
+} from "../locations/favorites.ts";
+import { buildSaveRows } from "../locations/save.ts";
 
 const PHARMACY_RESULT_PREFIX = "PHARM::";
 
@@ -34,11 +39,6 @@ export async function startNearbyPharmacies(
 
   await sendButtonsMessage(
     ctx,
-    t(ctx.locale, "pharmacy.start.prompt"),
-    buildButtons(
-      { id: IDS.LOCATION_SAVED_LIST, title: t(ctx.locale, "location.saved.button") },
-      { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") }
-    )
     t(ctx.locale, "pharmacy.flow.intro"),
     buildButtons(
       {
@@ -47,6 +47,7 @@ export async function startNearbyPharmacies(
       },
       { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") },
     ),
+    { emoji: "💊" },
   );
 
   return true;
@@ -65,20 +66,83 @@ export async function handlePharmacyLocation(
 
   await sendButtonsMessage(
     ctx,
-    t(ctx.locale, "pharmacy.location.received"),
-    buildButtons(
-      { id: "pharmacy_add_medicine", title: t(ctx.locale, "pharmacy.buttons.specify_medicine") },
-      { id: "pharmacy_search_now", title: t(ctx.locale, "pharmacy.buttons.search_now") },
-      { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") }
-    )
     t(ctx.locale, "pharmacy.flow.location_received"),
-    buildButtons({
-      id: IDS.BACK_HOME,
-      title: t(ctx.locale, "common.menu_back"),
-    }),
+    buildButtons(
+      {
+        id: "pharmacy_add_medicine",
+        title: t(ctx.locale, "pharmacy.buttons.specify_medicine"),
+      },
+      {
+        id: "pharmacy_search_now",
+        title: t(ctx.locale, "pharmacy.buttons.search_now"),
+      },
+      { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") },
+    ),
+    { emoji: "📍" },
   );
 
   return true;
+}
+
+export async function startPharmacySavedLocationPicker(
+  ctx: RouterContext,
+): Promise<boolean> {
+  if (!ctx.profileId) return false;
+  const favorites = await listFavorites(ctx);
+
+  await setState(ctx.supabase, ctx.profileId, {
+    key: "location_saved_picker",
+    data: { source: "pharmacy" },
+  });
+
+  const baseBody = t(ctx.locale, "location.saved.list.body", {
+    context: t(ctx.locale, "location.context.pickup"),
+  });
+  const body = favorites.length
+    ? baseBody
+    : `${baseBody}\n\n${t(ctx.locale, "location.saved.list.empty")}`;
+
+  await sendListMessage(
+    ctx,
+    {
+      title: t(ctx.locale, "location.saved.list.title"),
+      body,
+      sectionTitle: t(ctx.locale, "location.saved.list.section"),
+      rows: [
+        ...favorites.map(favoriteToRow),
+        ...buildSaveRows(ctx),
+        {
+          id: IDS.BACK_MENU,
+          title: t(ctx.locale, "common.menu_back"),
+          description: t(ctx.locale, "common.back_to_menu.description"),
+        },
+      ],
+      buttonText: t(ctx.locale, "location.saved.list.button"),
+    },
+    { emoji: "⭐" },
+  );
+
+  return true;
+}
+
+export async function handlePharmacySavedLocationSelection(
+  ctx: RouterContext,
+  selectionId: string,
+): Promise<boolean> {
+  if (!ctx.profileId) return false;
+  const favorite = await getFavoriteById(ctx, selectionId);
+  if (!favorite) {
+    await sendButtonsMessage(
+      ctx,
+      t(ctx.locale, "location.saved.list.expired"),
+      homeOnly(),
+    );
+    return true;
+  }
+  return await handlePharmacyLocation(ctx, {
+    lat: favorite.lat,
+    lng: favorite.lng,
+  });
 }
 
 export async function processPharmacyRequest(
@@ -125,6 +189,17 @@ function parseKeywords(input: string): string[] {
   return input.split(/[\n,]+/)
     .map((part) => part.trim())
     .filter((part) => part.length > 1);
+}
+
+function favoriteToRow(
+  favorite: UserFavorite,
+): { id: string; title: string; description?: string } {
+  return {
+    id: favorite.id,
+    title: `⭐ ${favorite.label}`,
+    description: favorite.address ??
+      `${favorite.lat.toFixed(4)}, ${favorite.lng.toFixed(4)}`,
+  };
 }
 
 async function tryPharmacyAgent(
@@ -244,6 +319,36 @@ async function sendPharmacyFallback(
     },
     { emoji: "💊" },
   );
+  return true;
+}
+
+export async function handlePharmacySearchNow(
+  ctx: RouterContext,
+  state: { location?: { lat: number; lng: number } } | undefined,
+): Promise<boolean> {
+  const location = state?.location;
+  if (!location) {
+    await sendButtonsMessage(
+      ctx,
+      t(ctx.locale, "pharmacy.flow.intro"),
+      buildButtons(
+        {
+          id: IDS.LOCATION_SAVED_LIST,
+          title: t(ctx.locale, "location.saved.button"),
+        },
+        { id: IDS.BACK_HOME, title: t(ctx.locale, "common.menu_back") },
+      ),
+      { emoji: "💊" },
+    );
+    return true;
+  }
+  return await sendPharmacyFallback(ctx, location, []);
+}
+
+export async function promptPharmacyMedicineInput(
+  ctx: RouterContext,
+): Promise<boolean> {
+  await sendText(ctx.from, t(ctx.locale, "pharmacy.prompt.medicines"));
   return true;
 }
 
