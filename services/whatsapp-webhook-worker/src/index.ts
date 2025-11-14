@@ -23,7 +23,7 @@ async function main() {
       res.status(statusCode).json(report);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error({ msg: "health.endpoint.failed", error: message });
+      logger.error({ event: "health.endpoint.failed", error: message });
       res.status(500).json({
         status: "critical",
         timestamp: new Date().toISOString(),
@@ -60,6 +60,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  logger.error({ error: error.message, stack: error.stack }, "Fatal error");
+  logger.error({ event: "fatal.error", error: error.message, stack: error.stack }, "Fatal error");
   process.exit(1);
 });
